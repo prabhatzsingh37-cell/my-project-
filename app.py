@@ -655,3 +655,30 @@ with heatmap_tab:
         projection="natural earth",
     )
     st.plotly_chart(geo, use_container_width=True)
+# --- SUPPLIER HEALTH SCORECARD ---
+st.divider()
+st.subheader("🏆 Global Supplier Health Scorecard")
+
+# Calculate metrics for scoring
+score_df = processed_df.groupby("Supplier_ID").agg({
+    "Defect_Rate": "mean",
+    "Production_Volume": "sum",
+    "Inspection_Result": lambda x: (x == "Pass").mean() * 100
+}).reset_index()
+
+# Weighted Scoring Logic: 
+# (1 - Defect_Rate) * 50 + (Pass_Rate) * 50
+score_df["Health_Score"] = (1 - score_df["Defect_Rate"]) * 50 + (score_df["Inspection_Result"] * 0.5)
+score_df = score_df.sort_values("Health_Score", ascending=False)
+
+# Styling the table
+def color_score(val):
+    color = 'red' if val < 70 else ('orange' if val < 85 else 'green')
+    return f'color: {color}'
+
+st.markdown("This scorecard uses a weighted average of defect rates and inspection pass rates.")
+st.dataframe(
+    score_df.style.format({"Defect_Rate": "{:.2%}", "Inspection_Result": "{:.1f}%", "Health_Score": "{:.1f}"})
+    .applymap(color_score, subset=['Health_Score']),
+    use_container_width=True
+)
