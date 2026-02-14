@@ -655,36 +655,3 @@ with heatmap_tab:
         projection="natural earth",
     )
     st.plotly_chart(geo, use_container_width=True)
-    # --- FINANCIAL ANALYTICS EXTENSION ---
-st.header("💰 Financial Impact Simulation")
-with st.container():
-    st.markdown('<div class="insight-card"><b>Executive Scenario Planner:</b> Estimate the cost of quality failures.</div>', unsafe_allow_html=True)
-    
-    col_a, col_b = st.columns(2)
-    with col_a:
-        unit_cost = st.number_input("Manufacturing Cost per Unit ($)", value=150.0)
-        penalty_cost = st.number_input("Defect Penalty/Rework Cost ($)", value=45.0)
-    
-    with col_b:
-        target_reduction = st.slider("Target Defect Reduction (%)", 0, 100, 20)
-    
-    # Calculations
-    current_loss = processed_df["Defect_Count"].sum() * penalty_cost
-    potential_savings = current_loss * (target_reduction / 100)
-    
-    m1, m2 = st.columns(2)
-    m1.metric("Current Quality Loss", f"${current_loss:,.2f}", delta_color="inverse")
-    m2.metric("Potential ROI (Savings)", f"${potential_savings:,.2f}", delta=f"{target_reduction}% Improvement")
-
-    # Waterfall Chart for Management
-    fig_waterfall = go.Figure(go.Waterfall(
-        name = "Savings", orientation = "v",
-        measure = ["relative", "relative", "total"],
-        x = ["Current Loss", "Reduction Savings", "Optimized Loss"],
-        textposition = "outside",
-        text = [f"-${current_loss:,.0f}", f"+${potential_savings:,.0f}", f"-${current_loss - potential_savings:,.0f}"],
-        y = [-current_loss, potential_savings, -(current_loss - potential_savings)],
-        connector = {"line":{"color":"rgb(63, 63, 63)"}},
-    ))
-    fig_waterfall.update_layout(title="Financial Path to Quality Excellence", showlegend=False)
-    st.plotly_chart(fig_waterfall, use_container_width=True)
