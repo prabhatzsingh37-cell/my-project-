@@ -682,3 +682,31 @@ st.dataframe(
     .applymap(color_score, subset=['Health_Score']),
     use_container_width=True
 )
+
+# --- Updated Filtering Logic with "Sorry" State ---
+
+# 1. Apply the region filter from the sidebar
+if not selected_regions:
+    # This block runs ONLY if NO region is selected
+    st.divider()
+    st.markdown("<h1 style='text-align: center; font-size: 100px;'>😔</h1>", unsafe_allow_html=True)
+    st.error("### Sorry! No regions selected.")
+    st.info("Please go to the **Control Panel** in the sidebar and select at least one region to view the analytics.")
+    st.stop()  # This prevents the rest of the app from running and showing errors
+else:
+    # This block runs normally when regions are selected
+    raw_df = generate_synthetic_data(rows=row_count, seed=int(seed_value))
+    processed_df = clean_transform_data(raw_df)
+    processed_df = processed_df[processed_df["Supplier_Region"].isin(selected_regions)]
+    
+    # Check if the filtered dataframe is empty (e.g., if data generation failed)
+    if processed_df.empty:
+        st.warning("😔 Sorry, the current filters resulted in an empty dataset.")
+        st.stop()
+
+st.set_page_config(
+    page_title="MFG Quality Pro", 
+    page_icon="🏭",  # This adds the factory emoji to the browser tab
+    layout="wide"
+)
+
